@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+
+<project xmlns:j="jelly:core" xmlns:maven="jelly:maven"
+	xmlns:ant="jelly:ant">
+
+	<goal name="build">
+		<maven:reactor basedir="${basedir}" includes="project.xml"
+			goals="jar:install" banner="Building " ignoreFailures="false" />
+			
+	<ant:mkdir dir="${logs.scanner.release.dest}"/>
+	<ant:mkdir dir="${logs.scanner.release.dest}/lib"/>
+	<ant:copy todir="${logs.scanner.release.dest}/lib" >
+			<fileset dir="lib"> 
+				<exclude name="**/*.sig"/>
+			</fileset>
+		</ant:copy>
+	<ant:copy todir="${logs.scanner.release.dest}/resources" >
+			<fileset dir="resources"> 
+				<exclude name="**/*.sig"/>
+			</fileset>
+		</ant:copy>
+		
+	<ant:copy file="scripts/startprofiler.bat"
+                  tofile="${logs.scanner.release.dest}/startprofiler.bat" />
+				  
+	<ant:copy file="Docs/README.txt" tofile="${logs.scanner.release.dest}/README.txt" />
+	
+	<attainGoal name="createManifest"/>
+	</goal>
+	
+	<goal name ="createManifest">
+          <ant:mkdir dir="${maven.repo.local}/${pom.groupId}/jars/temp"/>
+          <ant:unzip src="${maven.repo.local}/${pom.groupId}/jars/${pom.artifactId}-snapshot.jar" dest="${maven.repo.local}/${pom.groupId}/jars/temp"/>
+          <ant:jar destfile="${maven.repo.local}/${pom.groupId}/jars/temp/${pom.artifactId}-snapshot.jar">
+                         <manifest>
+                              <attribute name="Manifest-Version" value="${ManifestVersion}" />
+                              <attribute name="Ant-Version" value="${AntVersion}" />
+                              <attribute name="Created-By" value="${CreatedBy}" />
+                              <attribute name="Package" value="${Package}" />
+                              <attribute name="Build-Jdk" value="${BuildJdk}" />
+                              <attribute name="Extension-Name" value="${ExtensionName}" />
+                              <attribute name="Specification-Title" value="${SpecificationTitle}" />
+                              <attribute name="Specification-Vendor" value="${SpecificationVendor}" />
+                              <attribute name="Implementation-Title" value="${ImplementationTitle}" />
+                              <attribute name="Implementation-Vendor" value="${ImplementationVendor}" />
+                              <attribute name="Implementation-Version" value="${ImplementationVersion}" />
+							  <attribute name="Main-Class" value="${maven.jar.mainclass}" />
+							  <attribute name="Class-Path" value="${pam.maven.class.path}" />
+                         </manifest>
+                         <fileset dir="${maven.repo.local}/${pom.groupId}/jars/temp" includes="**/**" />
+          </ant:jar>
+          
+        <ant:delete file="${maven.repo.local}/${pom.groupId}/jars/${pom.artifactId}-snapshot.jar"/>
+		
+		<ant:delete file="build/${pom.artifactId}-snapshot.jar"/>
+		
+        <ant:copy file="${maven.repo.local}/${pom.groupId}/jars/temp/${pom.artifactId}-snapshot.jar"
+                  tofile="${logs.scanner.release.dest}/${pom.artifactId}.jar" />
+                 
+        <ant:delete dir="${maven.repo.local}/${pom.groupId}/jars/temp"/>
+     </goal>
+	 
+</project>

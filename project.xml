@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+	<extend>${basedir}/../project.xml</extend>
+	<pomVersion>3</pomVersion>
+	<artifactId>logsscanner</artifactId>
+	<groupId>logsscanner</groupId>
+	<name>logsscanner</name>
+	<repository>
+		<developerConnection>
+			scm:cvs:pserver:gagan.bajpai@192.168.1.177:/home/cvs:Optinuity
+		</developerConnection>
+	</repository>
+	<dependencies>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.12</version>
+		</dependency>
+		<dependency>
+			<groupId>jfreechart</groupId>
+			<artifactId>jfreechart</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>jcommon</groupId>
+			<artifactId>jcommon</artifactId>
+			<version>1.0.8</version>
+		</dependency>
+	</dependencies>
+	<build>
+		<sourceDirectory>src</sourceDirectory>
+		<defaultGoal>jar:install</defaultGoal>
+		<resources>
+			<resource>
+				<directory>resources</directory>
+			</resource>
+		</resources>
+	</build>
+
+</project>
+
