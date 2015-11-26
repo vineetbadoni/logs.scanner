@@ -5,4 +5,4 @@ set _REALPATH=%~dp0
 
 set JAVA_OPTS=%*
 
-"%JAVA_HOME%/bin/java" -D%JAVA_OPTS% -jar sqlprofiler.jar
+"%JAVA_HOME%/bin/java" -D%JAVA_OPTS% -jar logsscanner.jar

@@ -22,7 +22,7 @@ public class PropertiesUtil {
 		if(System.getProperty("config.properties.url")!=null){
 			configProperties.load(new FileInputStream(new File(System.getProperty("config.properties.url"))));
 		}else{
-			configProperties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties"));
+			configProperties.load(new FileInputStream(new File("resources/config.properties")));
 		}
 	}
 	

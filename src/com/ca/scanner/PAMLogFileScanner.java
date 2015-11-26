@@ -18,81 +18,71 @@ import java.util.regex.Pattern;
 
 import com.ca.logger.BaseLogger;
 import com.ca.logs.profiler.util.PropertiesUtil;
-import com.ca.render.ChartRenderer;
 
-public class PAMLogFileScanner {
-	
-//	PAM log4j pattern : 2015-11-06 13:08:28,093 INFO  [com.optinuity.c2o.workflowengine.WorkflowManager] [ Session Task-1] Manager for flow: 31 unlocked - java.util.concurrent.locks.ReentrantLock@7c6718a[Unlocked]
-//	private static final String PAM_LOG4J_REGEX = "(\\d{4}-\\d{2}-\\d{2}) (\\d{2}:\\d{2}:\\d{2},\\d{3}) (.*) \\[(.*)\\] \\[(.*)\\] (.*)$";
-	
-//	private static final String PAM_LOG_REGEX = "handleResponse: Time taken in processing = (\\d+)ms.";
-	
-//	private static final String PAM_LOG_REGEX = "Transaction committed...Time taken: (\\d+)";
-	
-//	private static final String PAM_LOG_REGEX = "(.*)Time taken in processing = (\\d+)ms.";
+public class PAMLogFileScanner implements Runnable{
 	
 	private static final String PAM_LOG4J_REGEX = PropertiesUtil.getProperty("REGEX_LOG4J_FORMAT");
 	
 	private static final String PAM_LOG_REGEX = PropertiesUtil.getProperty("REGEX_LOG_ENTRY_FORMAT");
 	
-	private static BaseLogger logger = BaseLogger.getInstance(PAMLogFileScanner.class);
+	private static BaseLogger logger = BaseLogger.getInstance(PAMLogFileScanner.class);;
 	
 	private LinkedList<LogEvent> events = new LinkedList<LogEvent>();
- 
-	public static void main(String[] args) throws IOException {
-		for(int i=1;;i++){
-			try {
-				String dirPath = PropertiesUtil.getProperty("NODE_BASE_PATH."+ i);
-				graphifyLogs(dirPath, "PAM Performance Node" + i);
-			} catch (Exception ignore) {
-				break;
-			}
-		}
+	
+	public LinkedList<LogEvent> getEvents() {
+		return events;
 	}
 
-	private static void graphifyLogs(final String basePath,final String title) throws IOException {
-		new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				File inputFile = new File(basePath);
-				String[] files ;
-				if(inputFile.isDirectory()){
-					files = inputFile.list(new FilenameFilter() {
-						
-						@Override
-						public boolean accept(File dir, String name) {
-							return name.contains("c2o.log") ;
-						}
-					});
-				}else{
-					files = new String[]{basePath};
-				}
+	public void setEvents(LinkedList<LogEvent> events) {
+		this.events = events;
+	}
 
-				PAMLogFileScanner scanner = new PAMLogFileScanner();
+	public String getID() {
+		return ID;
+	}
+
+	public void setID(String iD) {
+		ID = iD;
+	}
+
+	private String basePath ;
+	
+	private String ID;
+	
+	public PAMLogFileScanner(String basePath,String ID){
+		this.basePath = basePath;
+		this.ID = ID;
+	}
+	
+	public void scanLogs() {
+		File inputFile = new File(basePath);
+		String[] files ;
+		if(inputFile.isDirectory()){
+			files = inputFile.list(new FilenameFilter() {
 				
-				for(String fileName:files){
-//					Path path = Paths.get(basePath+File.separator+fileName);
-					logger.info("Processing ("+basePath+File.separator+fileName+").....");
-					boolean success = scanner.scanWithPattern(basePath+File.separator+fileName);
-					if(!success){
-						logger.error("Exiting. Scanner failed to lookup for the pattern, check previous errors");
-						return;
-					}
+				@Override
+				public boolean accept(File dir, String name) {
+					return name.contains("c2o.log") ;
 				}
-				
-				logger.info("Log files processing is complete.");
-				
-				logger.info("Starting post processing");
-				scanner.doPostProcessing();
-				logger.info("post processing complete");
-				
-				scanner.launchGraph(title);
-				
-				scanner.showAverage(title);
+			});
+		}else{
+			files = new String[]{basePath};
+		}
+
+		for(String fileName:files){
+			logger.info("Processing ("+basePath+File.separator+fileName+").....");
+			boolean success = scanWithPattern(basePath+File.separator+fileName);
+			if(!success){
+				logger.error("Exiting. Scanner failed to lookup for the pattern, check previous errors");
+				return;
 			}
-		},title).start();
+		}
 		
+		logger.info("Log files processing is complete.");
+		
+		logger.info("Starting post processing");
+		doPostProcessing();
+		logger.info("post processing complete");
 	}
 
 	protected void showAverage(String title) {
@@ -101,11 +91,6 @@ public class PAMLogFileScanner {
 			total+=Long.parseLong(event.getExtractedInfo());
 		}
 		logger.info("Average ("+title+")"+total/events.size());
-	}
-
-	private void launchGraph(String title) {
-		ChartRenderer render = new ChartRenderer(events,title);
-		render.launchGraph();
 	}
 
 	private void doPostProcessing() {
@@ -295,7 +280,11 @@ public class PAMLogFileScanner {
 			}
 			
 		}
+	}
 
+	@Override
+	public void run() {
+		scanLogs();
 	}
 
 }

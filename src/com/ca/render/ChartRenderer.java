@@ -2,7 +2,10 @@ package com.ca.render;
 
 import java.awt.Frame;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -13,7 +16,6 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
-import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -22,7 +24,7 @@ import com.ca.scanner.PAMLogFileScanner.LogEvent;
 
 public class ChartRenderer {
 
-	private LinkedList<LogEvent> events = null;
+	private HashMap<String,LinkedList<LogEvent>> eventsMap = new HashMap<String,LinkedList<LogEvent>>();
 	
 	private String title ;
 	
@@ -30,14 +32,19 @@ public class ChartRenderer {
 	
 	//-1 means all entries
 	private static int NoOfMins = -1;
+	
+	private XYSeriesCollection dataset = new XYSeriesCollection();
 
-	public ChartRenderer(LinkedList<LogEvent> events,String title) {
-		this.events = events;
+	public ChartRenderer(String title) {
 		this.title = title;
 	}
+	
+	public void addEvents(String id,LinkedList<LogEvent> events){
+		eventsMap.put(id, events) ;
+	}
 
-	private XYDataset createDataset() {
-		XYSeriesCollection dataset = new XYSeriesCollection();
+	private void createDataset(String title ,LinkedList<LogEvent> events) {
+		
 		XYSeries series = new XYSeries(title);
 		// XYSeries series2 = new XYSeries("Object 2");
 		// XYSeries series3 = new XYSeries("Object 3");
@@ -76,7 +83,6 @@ public class ChartRenderer {
 		}
 		dataset.addSeries(series);
 
-		return dataset;
 	}
 	
 	private JPanel createChartPanel() {
@@ -84,7 +90,7 @@ public class ChartRenderer {
 	    String xAxisLabel = PropertiesUtil.getProperty("X_AXIS_TEXT");
 	    String yAxisLabel = PropertiesUtil.getProperty("Y_AXIS_TEXT");
 	 
-	    XYDataset dataset = createDataset();
+	    createGraph();
 	    
 	    JFreeChart chart = ChartFactory.createTimeSeriesChart(chartTitle, xAxisLabel, yAxisLabel, dataset,true,true,true);
 	    
@@ -107,6 +113,19 @@ public class ChartRenderer {
                 
             }
         });
+	}
+
+	/**
+	 * 
+	 */
+	private void createGraph() {
+		Iterator it = eventsMap.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry pair = (Map.Entry) it.next();
+			System.out.println(pair.getKey() + " = " + pair.getValue());
+			// it.remove(); // avoids a ConcurrentModificationException
+			createDataset((String)pair.getKey(),(LinkedList<LogEvent>) pair.getValue());
+		}
 	}
 
 }

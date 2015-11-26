@@ -20,8 +20,8 @@
 			</fileset>
 		</ant:copy>
 		
-	<ant:copy file="scripts/startprofiler.bat"
-                  tofile="${logs.scanner.release.dest}/startprofiler.bat" />
+	<ant:copy file="scripts/startscanner.bat"
+                  tofile="${logs.scanner.release.dest}/startscanner.bat" />
 				  
 	<ant:copy file="Docs/README.txt" tofile="${logs.scanner.release.dest}/README.txt" />
 	
